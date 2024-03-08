@@ -56,7 +56,7 @@ public class Main {
         System.out.println("Comienza el juego de Hombres lobo de Castronegro");
         System.out.println("Asignando roles a los jugadores...");
 
-        // Revolver los roles
+        // Resolver los roles
         ArrayList<Rol> roles = new ArrayList<>();
         for (Jugador jugador : jugadores) {
             roles.add(jugador.getRol());
