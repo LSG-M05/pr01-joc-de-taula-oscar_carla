@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 // Enum para representar los roles de los jugadores
@@ -173,7 +175,41 @@ public class Main {
                         System.out.println(jugador.getNombre() + " ha muerto. Su rol era " + jugador.getRol());
                     }
                 }
+
+                // Día
                 System.out.println("\nComienza el día...");
+                System.out.println("Los jugadores vivos deben decidir a quién expulsar.");
+                System.out.println("Escribe el nombre del jugador al que quieres expulsar: ");
+                String votado = scanner.nextLine();
+                Map<String, Integer> votos = new HashMap<>();
+                for (Jugador jugador : jugadores) {
+                    if (jugador.estaVivo()) {
+                        votos.put(jugador.getNombre(), 0);
+                    }
+                }
+                for (Jugador jugador : jugadores) {
+                    if (jugador.estaVivo()) {
+                        System.out.println("¿Votar para expulsar a " + jugador.getNombre() + "? (S/N): ");
+                        String voto = scanner.nextLine();
+                        if (voto.equalsIgnoreCase("S")) {
+                            votos.put(jugador.getNombre(), votos.get(jugador.getNombre()) + 1);
+                        }
+                    }
+                }
+                int maxVotos = 0;
+                String jugadorExpulsado = "";
+                for (Map.Entry<String, Integer> entry : votos.entrySet()) {
+                    if (entry.getValue() > maxVotos) {
+                        maxVotos = entry.getValue();
+                        jugadorExpulsado = entry.getKey();
+                    }
+                }
+                for (Jugador jugador : jugadores) {
+                    if (jugador.getNombre().equalsIgnoreCase(jugadorExpulsado)) {
+                        jugador.matar();
+                        System.out.println(jugador.getNombre() + " ha sido expulsado.");
+                    }
+                }
             }
 
             // Cambiar a noche siguiente
