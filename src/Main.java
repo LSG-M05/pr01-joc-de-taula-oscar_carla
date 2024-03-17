@@ -1,185 +1,245 @@
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Random;
 import java.util.Scanner;
 
-// Enum para representar los roles de los jugadores
-enum Rol {
-    CAZADOR, VIDENTE, PROTECTOR, ANCIANO, ALDEANO, HOMBRE_LOBO, PERRO_LOBO
-}
-
-// Clase principal del juego
 public class Main {
-    private static class Jugador {
-        private final String nombre;
-        private Rol rol;
-        private boolean vivo;
-
-        public Jugador(String nombre, Rol rol) {
-            this.nombre = nombre;
-            this.rol = rol;
-            this.vivo = true;
-        }
-
-        public String getNombre() {
-            return nombre;
-        }
-
-        public Rol getRol() {
-            return rol;
-        }
-
-        public void setRol(Rol rol) {
-            this.rol = rol;
-        }
-
-        public boolean estaVivo() {
-            return vivo;
-        }
-
-        public void matar() {
-            vivo = false;
-        }
-    }
-
     public static void main(String[] args) {
+        String[] jugadores = {"Jugador 1", "Jugador 2", "Jugador 3", "Jugador 4",
+                "Jugador 5", "Jugador 6", "Jugador 7", "Jugador 8"};
+        int[] ids = {1, 2, 3, 4, 5, 6, 7, 8};
+
+        String[] roles = {"Lobo", "Lobo", "Aldeano", "Vidente", "Protector", "Abuelo", "Perro-lobo", "Cazador"};
+
+        asignarRoles(jugadores, roles);
+
+        System.out.println("Roles asignados:");
+        for (int i = 0; i < jugadores.length; i++) {
+            System.out.println(jugadores[i] + " - ID: " + ids[i] + ": " + roles[i]);
+        }
+
+        boolean lobosVivos = true;
+        boolean aldeanosVivos = true;
+        boolean perroLoboSeleccionado = false;
+
         Scanner scanner = new Scanner(System.in);
-        ArrayList<Jugador> jugadores = new ArrayList<>();
-        jugadores.add(new Jugador("Jugador1", Rol.CAZADOR));
-        jugadores.add(new Jugador("Jugador2", Rol.VIDENTE));
-        jugadores.add(new Jugador("Jugador3", Rol.PROTECTOR));
-        jugadores.add(new Jugador("Jugador4", Rol.ANCIANO));
-        jugadores.add(new Jugador("Jugador5", Rol.ALDEANO));
-        jugadores.add(new Jugador("Jugador6", Rol.HOMBRE_LOBO));
-        jugadores.add(new Jugador("Jugador7", Rol.HOMBRE_LOBO));
-        jugadores.add(new Jugador("Jugador8", Rol.PERRO_LOBO));
 
-        System.out.println("Comienza el juego de Hombres lobo de Castronegro");
-        System.out.println("Asignando roles a los jugadores...");
-
-        // Revolver los roles
-        ArrayList<Rol> roles = new ArrayList<>();
-        for (Jugador jugador : jugadores) {
-            roles.add(jugador.getRol());
-        }
-        Collections.shuffle(roles);
-
-        // Asignar roles a los jugadores
-        for (int i = 0; i < jugadores.size(); i++) {
-            jugadores.get(i).setRol(roles.get(i));
-            System.out.println(jugadores.get(i).getNombre() + " es " + roles.get(i));
+        // Seleccionar el rol del Perro-lobo solo en la primera noche
+        System.out.println("Perro-lobo, ¿deseas ser lobo o aldeano? (lobo/aldeano)");
+        String decision = scanner.next();
+        if (decision.equalsIgnoreCase("lobo")) {
+            roles[6] = "Lobo";
+        } else {
+            roles[6] = "Aldeano";
         }
 
-        // Comenzar la partida
-        boolean juegoActivo = true;
-        boolean primeraNoche = true;
+        boolean primeraRonda = true;
+        boolean protegido = false;
 
-        while (juegoActivo) {
-            boolean protectorActuado = false;
-            boolean videnteActuado = false;
-            boolean hombresLoboActuado = false;
+        // Vidas del Abuelo
+        int vidasAbuelo = 2;
 
-            // Noche
-            System.out.println("\nComienza la noche...");
-            for (Jugador jugadorActual : jugadores) {
-                if (jugadorActual.estaVivo()) {
-                    if (primeraNoche) {
-                        if (jugadorActual.getRol() == Rol.PERRO_LOBO) {
-                            System.out.println("\nTurno de " + jugadorActual.getNombre() + " (" + jugadorActual.getRol() + ")");
-                            System.out.println("¿Deseas ser aldeano o lobo? (A/L): ");
-                            String decision = scanner.nextLine();
-                            if (decision.equalsIgnoreCase("A")) {
-                                System.out.println(jugadorActual.getNombre() + " ha decidido ser aldeano.");
-                                jugadorActual.setRol(Rol.ALDEANO);
-                            } else {
-                                System.out.println(jugadorActual.getNombre() + " ha decidido ser lobo.");
-                                jugadorActual.setRol(Rol.HOMBRE_LOBO);
-                            }
-                        }
+        while (lobosVivos && aldeanosVivos) {
+            System.out.println("\n--- Ronda de noche ---");
+            // Lógica para la noche
+            if (primeraRonda) {
+                // Aquí va la lógica para los otros roles en la primera ronda
+                // Protector, Vidente y Lobos
+                System.out.println("Protector, selecciona a qué jugador deseas proteger (ingresa el ID):");
+                int idJugadorProtegido = obtenerJugadorValido(scanner, jugadores, ids);
+                int indiceProtegido = obtenerIndicePorId(ids, idJugadorProtegido);
+                System.out.println("El protector ha protegido a " + jugadores[indiceProtegido]);
+                protegido = true;
+
+                // Lobos eligen a quién eliminar
+                System.out.println("Lobos, discutan a qué jugador desean eliminar (ingresa el ID):");
+                int idJugadorEliminado = obtenerJugadorValido(scanner, jugadores, ids);
+                int indiceEliminado = obtenerIndicePorId(ids, idJugadorEliminado);
+
+                // Validar que los lobos no se eliminen entre sí
+                if (roles[indiceEliminado].equals("Lobo")) {
+                    System.out.println("¡Los lobos no pueden eliminarse entre sí! Elige a otro jugador.");
+                    continue; // Reinicia el ciclo de la ronda de noche
+                }
+
+                // Verificar si el jugador eliminado es el Abuelo
+                if (roles[indiceEliminado].equals("Abuelo")) {
+                    if (vidasAbuelo > 1) {
+                        System.out.println("Los lobos han atacado al Abuelo, pero ha sobrevivido gracias a su segunda vida.");
+                        vidasAbuelo--;
+                        continue;
                     } else {
-                        if (jugadorActual.getRol() == Rol.PROTECTOR && !protectorActuado) {
-                            System.out.println("\nTurno de " + jugadorActual.getNombre() + " (" + jugadorActual.getRol() + ")");
-                            System.out.println("¿A quién quieres proteger esta noche?");
-                            String protegido = scanner.nextLine();
-                            for (Jugador protegidoJugador : jugadores) {
-                                if (protegidoJugador.getNombre().equalsIgnoreCase(protegido)) {
-                                    System.out.println(protegidoJugador.getNombre() + " está protegido esta noche.");
-                                    protectorActuado = true;
-                                    break;
-                                }
-                            }
-                        } else if (jugadorActual.getRol() == Rol.VIDENTE && !videnteActuado) {
-                            System.out.println("\nTurno de " + jugadorActual.getNombre() + " (" + jugadorActual.getRol() + ")");
-                            System.out.println("Escribe el nombre del jugador cuyo rol quieres ver: ");
-                            String nombreJugador = scanner.nextLine();
-                            for (Jugador objetivoJugador : jugadores) {
-                                if (objetivoJugador.getNombre().equalsIgnoreCase(nombreJugador)) {
-                                    System.out.println(objetivoJugador.getNombre() + " es " + objetivoJugador.getRol());
-                                    videnteActuado = true;
-                                    break;
-                                }
-                            }
-                        } else if ((jugadorActual.getRol() == Rol.HOMBRE_LOBO || jugadorActual.getRol() == Rol.PERRO_LOBO) && !hombresLoboActuado) {
-                            System.out.println("\nTurno de los Hombres Lobo");
-                            System.out.println("¿A quién quieres matar?");
-                            String objetivo = scanner.nextLine();
-                            Jugador objetivoJugador = null;
-                            for (Jugador jugador : jugadores) {
-                                if (jugador.getNombre().equalsIgnoreCase(objetivo)) {
-                                    objetivoJugador = jugador;
-                                    break;
-                                }
-                            }
-                            if (objetivoJugador == null) {
-                                System.out.println("No se puede atacar a esa persona.");
-                            } else if (!objetivoJugador.estaVivo()) {
-                                System.out.println("No se puede atacar a un jugador muerto.");
-                            } else {
-                                objetivoJugador.matar();
-                                System.out.println(objetivoJugador.getNombre() + " ha sido eliminado.");
-                                hombresLoboActuado = true;
-                            }
-                        }
+                        System.out.println("Los lobos han eliminado al Abuelo.");
+                        eliminarJugador(jugadores, roles, ids, indiceEliminado);
+                        // Reiniciar las vidas del Abuelo
+                        vidasAbuelo = 2;
                     }
                 } else {
-                    System.out.println(jugadorActual.getNombre() + " está muerto y no puede actuar.");
+                    System.out.println("Los lobos han decidido eliminar a " + jugadores[indiceEliminado]);
+                    eliminarJugador(jugadores, roles, ids, indiceEliminado);
                 }
-            }
 
-            // Verificar condiciones de fin de juego
-            boolean hombresLoboVivos = false;
-            boolean otrosVivos = false;
-            for (Jugador jugador : jugadores) {
-                if (jugador.estaVivo()) {
-                    if (jugador.getRol() == Rol.HOMBRE_LOBO || jugador.getRol() == Rol.PERRO_LOBO) {
-                        hombresLoboVivos = true;
-                    } else {
-                        otrosVivos = true;
-                    }
-                }
-            }
+                System.out.println("Vidente, ¿a qué jugador deseas investigar su rol? (ingresa el ID)");
+                int idJugadorInvestigado = obtenerJugadorValido(scanner, jugadores, ids);
+                int indiceInvestigado = obtenerIndicePorId(ids, idJugadorInvestigado);
+                String rolInvestigado = roles[indiceInvestigado];
+                System.out.println("El rol de " + jugadores[indiceInvestigado] + " es: " + rolInvestigado);
 
-            if (!hombresLoboVivos) {
-                System.out.println("¡Los aldeanos han ganado! Todos los hombres lobo han sido eliminados.");
-                juegoActivo = false;
-            } else if (!otrosVivos) {
-                System.out.println("¡Los hombres lobo han ganado! No quedan aldeanos vivos.");
-                juegoActivo = false;
+                primeraRonda = false; // Cambiar el estado de la primera ronda después de que se hayan preguntado todos los roles
             } else {
-                // Fin de la noche
-                System.out.println("\nFin de la noche\n");
-                System.out.println("Resumen de la noche:");
-                for (Jugador jugador : jugadores) {
-                    if (!jugador.estaVivo()) {
-                        System.out.println(jugador.getNombre() + " ha muerto. Su rol era " + jugador.getRol());
-                    }
+                // Aquí va la lógica para los roles en las siguientes rondas
+
+                // Protector, Vidente y Lobos
+                System.out.println("Protector, selecciona a qué jugador deseas proteger (ingresa el ID):");
+                int idJugadorProtegido = obtenerJugadorValido(scanner, jugadores, ids);
+                int indiceProtegido = obtenerIndicePorId(ids, idJugadorProtegido);
+                if (protegido) {
+                    System.out.println("El protector ya ha protegido a un jugador esta noche.");
+                } else {
+                    System.out.println("El protector ha protegido a " + jugadores[indiceProtegido]);
                 }
-                System.out.println("\nComienza el día...");
+
+                // Lobos eligen a quién eliminar
+                System.out.println("Lobos, discutan a qué jugador desean eliminar (ingresa el ID):");
+                int idJugadorEliminado = obtenerJugadorValido(scanner, jugadores, ids);
+                int indiceEliminado = obtenerIndicePorId(ids, idJugadorEliminado);
+
+                // Validar que los lobos no se eliminen entre sí
+                if (roles[indiceEliminado].equals("Lobo")) {
+                    System.out.println("¡Los lobos no pueden eliminarse entre sí! Elige a otro jugador.");
+                    continue; // Reinicia el ciclo de la ronda de noche
+                }
+
+                // Verificar si el jugador eliminado es el Abuelo
+                if (roles[indiceEliminado].equals("Abuelo")) {
+                    if (vidasAbuelo > 1) {
+                        System.out.println("Los lobos han atacado al Abuelo, pero ha sobrevivido gracias a su segunda vida.");
+                        vidasAbuelo--;
+                        continue;
+                    } else {
+                        System.out.println("Los lobos han eliminado al Abuelo.");
+                        eliminarJugador(jugadores, roles, ids, indiceEliminado);
+                        // Reiniciar las vidas del Abuelo
+                        vidasAbuelo = 2;
+                    }
+                } else {
+                    System.out.println("Los lobos han decidido eliminar a " + jugadores[indiceEliminado]);
+                    eliminarJugador(jugadores, roles, ids, indiceEliminado);
+                }
+
+                System.out.println("Vidente, ¿a qué jugador deseas investigar su rol? (ingresa el ID)");
+                int idJugadorInvestigado = obtenerJugadorValido(scanner, jugadores, ids);
+                int indiceInvestigado = obtenerIndicePorId(ids, idJugadorInvestigado);
+                String rolInvestigado = roles[indiceInvestigado];
+                System.out.println("El rol de " + jugadores[indiceInvestigado] + " es: " + rolInvestigado);
             }
 
-            // Cambiar a noche siguiente
-            primeraNoche = false;
+            protegido = false; // Reiniciar estado de protegido para la siguiente ronda de noche
+
+            // Simulando el fin de la ronda
+            System.out.println("\n--- Ronda de día ---");
+            // Lógica para el día
+            System.out.println("Votación para eliminar a un jugador:");
+
+            int[] votos = new int[jugadores.length];
+            int maxVotos = 0;
+            int jugadorEliminado = -1;
+
+            for (int i = 0; i < jugadores.length; i++) {
+                if (!roles[i].equals("Eliminado")) {
+                    System.out.println("Jugador " + jugadores[i] + ", ingresa el ID del jugador que deseas eliminar:");
+                    int idJugadorVotado = obtenerJugadorValido(scanner, jugadores, ids);
+                    int indiceVotado = obtenerIndicePorId(ids, idJugadorVotado);
+                    votos[indiceVotado]++;
+                    if (votos[indiceVotado] > maxVotos) {
+                        maxVotos = votos[indiceVotado];
+                        jugadorEliminado = indiceVotado;
+                    } else if (votos[indiceVotado] == maxVotos) {
+                        jugadorEliminado = -1; // Empate
+                    }
+                }
+            }
+
+            if (jugadorEliminado != -1) {
+                eliminarJugador(jugadores, roles, ids, jugadorEliminado);
+            } else {
+                System.out.println("Empate en la votación, ningún jugador será eliminado.");
+            }
+
+            System.out.println("¿Continuar? (s/n)");
+            String continuar = scanner.next();
+            if (continuar.equalsIgnoreCase("n")) {
+                break;
+            }
         }
 
-        scanner.close();
+        // Determinar el ganador
+        if (lobosVivos) {
+            System.out.println("¡Los lobos ganaron!");
+        } else if (aldeanosVivos) {
+            System.out.println("¡Los aldeanos ganaron!");
+        } else {
+            System.out.println("¡Es un empate!");
+        }
+    }
+
+    public static void asignarRoles(String[] jugadores, String[] roles) {
+        Random random = new Random();
+        for (int i = 0; i < jugadores.length; i++) {
+            int indice = random.nextInt(jugadores.length);
+            // Intercambiamos los roles en los índices i e indice
+            String temp = roles[i];
+            roles[i] = roles[indice];
+            roles[indice] = temp;
+        }
+    }
+
+    public static int obtenerIndicePorId(int[] ids, int id) {
+        for (int i = 0; i < ids.length; i++) {
+            if (ids[i] == id) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public static int obtenerJugadorValido(Scanner scanner, String[] jugadores, int[] ids) {
+        int idJugador;
+        do {
+            System.out.println("Ingresa el ID del jugador:");
+            idJugador = scanner.nextInt();
+            if (!jugadorValido(idJugador, ids)) {
+                System.out.println("El jugador ingresado no es válido. Por favor, ingresa el ID de otro jugador.");
+            }
+        } while (!jugadorValido(idJugador, ids));
+        return idJugador;
+    }
+
+    public static boolean jugadorValido(int idJugador, int[] ids) {
+        for (int id : ids) {
+            if (id == idJugador) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void eliminarJugador(String[] jugadores, String[] roles, int[] ids, int indice) {
+        System.out.println(jugadores[indice] + " ha sido eliminado.");
+
+        // Si el jugador eliminado es el cazador
+        if (roles[indice].equals("Cazador")) {
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("¡El cazador ha sido eliminado! Por favor, ingresa el ID del jugador que deseas eliminar:");
+            int idJugadorEliminadoPorCazador = obtenerJugadorValido(scanner, jugadores, ids);
+            int indiceEliminadoPorCazador = obtenerIndicePorId(ids, idJugadorEliminadoPorCazador);
+            System.out.println(jugadores[indiceEliminadoPorCazador] + " ha sido eliminado por el cazador.");
+            roles[indiceEliminadoPorCazador] = "Eliminado";
+            // Desactivar al jugador eliminado
+            ids[indiceEliminadoPorCazador] = -1;
+        } else {
+            roles[indice] = "Eliminado";
+            // Desactivar al jugador eliminado
+            ids[indice] = -1;
+        }
     }
 }
+
