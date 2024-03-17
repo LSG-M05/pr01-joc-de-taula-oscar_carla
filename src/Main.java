@@ -3,8 +3,7 @@ import java.util.Scanner;
 
 public class JuegoRoles {
     public static void main(String[] args) {
-        String[] jugadores = {"Jugador 1", "Jugador 2", "Jugador 3", "Jugador 4",
-                             "Jugador 5", "Jugador 6", "Jugador 7", "Jugador 8"};
+        String[] jugadores = {"Jugador 1", "Jugador 2", "Jugador 3", "Jugador 4", "Jugador 5", "Jugador 6", "Jugador 7", "Jugador 8"};
 
         String[] roles = {"Lobo", "Lobo", "Aldeano", "Vidente", "Protector", "Abuelo", "Perro-lobo", "Cazador"};
 
@@ -18,12 +17,34 @@ public class JuegoRoles {
         boolean lobosVivos = true;
         boolean aldeanosVivos = true;
 
+        boolean primeraNoche = true;
+        boolean perroLoboSeleccionado = false;
+
+
         Scanner scanner = new Scanner(System.in);
 
         while (lobosVivos && aldeanosVivos) {
             System.out.println("\n--- Ronda de día ---");
 
             System.out.println("\n--- Ronda de noche ---");
+
+            if (primeraNoche) {
+                System.out.println("Perro-lobo, ¿deseas ser lobo o aldeano? (lobo/aldeano)");
+                String decision = scanner.next();
+                if (decision.equalsIgnoreCase("lobo")) {
+                    roles[6] = "Lobo";
+                } else {
+                    roles[6] = "Aldeano";
+                }
+                primeraNoche = false;
+                perroLoboSeleccionado = true;
+            } else {
+                if (perroLoboSeleccionado) {
+                    // Roles
+                } else {
+                    // Roles
+                }
+            }
 
             System.out.println("¿Continuar? (s/n)");
             String continuar = scanner.next();
