@@ -34,6 +34,9 @@ public class Main {
         boolean primeraRonda = true;
         boolean protegido = false;
 
+        // Vidas del Abuelo
+        int vidasAbuelo = 2;
+
         while (lobosVivos && aldeanosVivos) {
             System.out.println("\n--- Ronda de noche ---");
             // Lógica para la noche
@@ -46,11 +49,29 @@ public class Main {
                 System.out.println("El protector ha protegido a " + jugadores[indiceProtegido]);
                 protegido = true;
 
+                // Lobos eligen a quién eliminar
                 System.out.println("Lobos, discutan a qué jugador desean eliminar (ingresa el ID):");
                 int idJugadorEliminado = obtenerJugadorValido(scanner, jugadores, ids);
                 int indiceEliminado = obtenerIndicePorId(ids, idJugadorEliminado);
-                if (idJugadorEliminado == idJugadorProtegido) {
-                    System.out.println("¡El jugador protegido ha sido atacado por los lobos pero ha sido protegido por el Protector!");
+
+                // Validar que los lobos no se eliminen entre sí
+                if (roles[indiceEliminado].equals("Lobo")) {
+                    System.out.println("¡Los lobos no pueden eliminarse entre sí! Elige a otro jugador.");
+                    continue; // Reinicia el ciclo de la ronda de noche
+                }
+
+                // Verificar si el jugador eliminado es el Abuelo
+                if (roles[indiceEliminado].equals("Abuelo")) {
+                    if (vidasAbuelo > 1) {
+                        System.out.println("Los lobos han atacado al Abuelo, pero ha sobrevivido gracias a su segunda vida.");
+                        vidasAbuelo--;
+                        continue;
+                    } else {
+                        System.out.println("Los lobos han eliminado al Abuelo.");
+                        eliminarJugador(jugadores, roles, ids, indiceEliminado);
+                        // Reiniciar las vidas del Abuelo
+                        vidasAbuelo = 2;
+                    }
                 } else {
                     System.out.println("Los lobos han decidido eliminar a " + jugadores[indiceEliminado]);
                     eliminarJugador(jugadores, roles, ids, indiceEliminado);
@@ -76,11 +97,29 @@ public class Main {
                     System.out.println("El protector ha protegido a " + jugadores[indiceProtegido]);
                 }
 
+                // Lobos eligen a quién eliminar
                 System.out.println("Lobos, discutan a qué jugador desean eliminar (ingresa el ID):");
                 int idJugadorEliminado = obtenerJugadorValido(scanner, jugadores, ids);
                 int indiceEliminado = obtenerIndicePorId(ids, idJugadorEliminado);
-                if (idJugadorEliminado == idJugadorProtegido) {
-                    System.out.println("¡El jugador protegido ha sido atacado por los lobos pero ha sido protegido por el Protector!");
+
+                // Validar que los lobos no se eliminen entre sí
+                if (roles[indiceEliminado].equals("Lobo")) {
+                    System.out.println("¡Los lobos no pueden eliminarse entre sí! Elige a otro jugador.");
+                    continue; // Reinicia el ciclo de la ronda de noche
+                }
+
+                // Verificar si el jugador eliminado es el Abuelo
+                if (roles[indiceEliminado].equals("Abuelo")) {
+                    if (vidasAbuelo > 1) {
+                        System.out.println("Los lobos han atacado al Abuelo, pero ha sobrevivido gracias a su segunda vida.");
+                        vidasAbuelo--;
+                        continue;
+                    } else {
+                        System.out.println("Los lobos han eliminado al Abuelo.");
+                        eliminarJugador(jugadores, roles, ids, indiceEliminado);
+                        // Reiniciar las vidas del Abuelo
+                        vidasAbuelo = 2;
+                    }
                 } else {
                     System.out.println("Los lobos han decidido eliminar a " + jugadores[indiceEliminado]);
                     eliminarJugador(jugadores, roles, ids, indiceEliminado);
